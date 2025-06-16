@@ -19,12 +19,19 @@ public class ServiceTime {
 
     }
     private static String  getTime(String zoneId){
+        if (!checkZoneIdExist(zoneId)) {
+            return "there is no such time zone";
+        }
         ZonedDateTime timeUTC = ZonedDateTime.now( ZoneId.of(zoneId));
         final String format = timeUTC.format(dateTimeFormatter);
         return format;
     }
     public static  boolean checkZoneIdExist(String zoneId){
+
         List<String> listzoneIdExisted = loadExistingZoneId();
+        if(zoneId==null || listzoneIdExisted.size()==0){
+            return false;
+        }
         return listzoneIdExisted.contains(zoneId);
     }
     private static List<String>loadExistingZoneId () {
@@ -36,7 +43,7 @@ public class ServiceTime {
                 zoneIdExisted.add(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+           return zoneIdExisted;
         }
         return zoneIdExisted;
     }

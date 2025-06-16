@@ -1,3 +1,11 @@
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.IContext;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
+;
+
+
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -7,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 // http://localhost:8080/time?timezone=UTC%2B02:00 риклад запиту
@@ -15,13 +25,30 @@ import java.util.List;
 
 
 @WebServlet(value = "/time")
+
+
     public class ServletTimeCookie extends HttpServlet {
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
-            resp.setContentType("text/html");
+    private TemplateEngine engine;
+    @Override
+    public void init() throws ServletException {
+        ServletContextTemplateResolver servletContextTemplateResolver = new ServletContextTemplateResolver(this.getServletContext());
+        servletContextTemplateResolver.setPrefix("/WEB-INF/templates/");
+        servletContextTemplateResolver.setSuffix(".html");
+        servletContextTemplateResolver.setTemplateMode("HTML");
+        servletContextTemplateResolver.setCacheable(false);
+        engine = new TemplateEngine();
+        engine.setTemplateResolver(servletContextTemplateResolver);
+    }
+
+    @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html");
             try {
                 PrintWriter writer = resp.getWriter();
-                writer.write(getTimeByParameter(req, resp));
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("time",getTimeByParameter(req, resp));
+                WebContext context = new WebContext(req, resp, getServletContext(), req.getLocale(),variables);
+                engine.process("hello",  context , resp.getWriter());
                 writer.close();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
