@@ -1,8 +1,0 @@
-HELP.md
-target/
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-.DS_Store
